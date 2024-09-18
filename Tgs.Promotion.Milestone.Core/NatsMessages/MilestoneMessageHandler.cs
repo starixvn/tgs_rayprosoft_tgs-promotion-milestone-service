@@ -26,7 +26,7 @@ public class MilestoneMessageHandler(
 
         var promotions = await promotionServiceClient
             .ListPromotionsByPromotionTypeAsync(Const.Milestone, cancellationToken)
-            .Where(x => x.EventDuring.From <= today && x.EventDuring.To.Date >= today)
+            .Where(x => x.EventDuring.From <= today && x.EventDuring.To >= today)
             .ToListAsync(cancellationToken);
 
         var dateTimeToHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);

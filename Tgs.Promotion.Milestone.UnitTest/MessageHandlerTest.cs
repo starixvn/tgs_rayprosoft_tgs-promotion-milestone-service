@@ -32,17 +32,21 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var promotionId1 = Guid.NewGuid();
             var promotionId2 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(-1), To = DateTime.Today.AddDays(5) }
+                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
                 },
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId2,
-                    EventDuring = new During { From = DateTime.Today.AddDays(from), To = DateTime.Today.AddDays(to) }
+                    EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
                 },
             };
 
@@ -76,12 +80,16 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var brandId = Guid.NewGuid();
             var promotionId1 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(from), To = DateTime.Today.AddDays(to) }
+                    EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
                 },
             };
 
@@ -112,12 +120,16 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var brandId = Guid.NewGuid();
             var promotionId1 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(-1), To = DateTime.Today.AddDays(5) }
+                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
                 }
             };
 
@@ -185,12 +197,16 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var brandId = Guid.NewGuid();
             var promotionId1 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(-1), To = DateTime.Today.AddDays(5) }
+                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
                 }
             };
 
@@ -266,12 +282,16 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var brandId = Guid.NewGuid();
             var promotionId1 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(-1), To = DateTime.Today.AddDays(5) }
+                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
                 }
             };
 
@@ -347,12 +367,16 @@ namespace Tgs.Promotion.Milestone.UnitTest
             var brandId = Guid.NewGuid();
             var promotionId1 = Guid.NewGuid();
 
+            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
             var promotions = new PromotionMainInfo[]
             {
                 new PromotionMainInfo
                 {
                     BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = DateTime.Today.AddDays(-1), To = DateTime.Today.AddDays(5) }
+                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
                 }
             };
 
