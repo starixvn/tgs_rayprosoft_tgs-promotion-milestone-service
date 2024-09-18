@@ -20,14 +20,14 @@ public class MilestoneMessageHandler(
     {
         logger.LogInformation("Milestone promotion distribute to start.");
 
-        var today = new DateTimeOffset(DateTime.Now.Date, TimeSpan.FromHours(8));
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
 
         var promotions = await promotionServiceClient
             .ListPromotionsByPromotionTypeAsync(Const.Milestone, cancellationToken)
             .Where(x => x.EventDuring.From <= today && x.EventDuring.To.Date >= today)
             .ToListAsync(cancellationToken);
-
-        var now = DateTimeOffset.Now;
 
         var dateTimeToHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
 
