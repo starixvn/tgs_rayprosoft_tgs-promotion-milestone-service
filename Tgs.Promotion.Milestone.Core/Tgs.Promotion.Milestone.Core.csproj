@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tgs.Core.Infrastructures.Nats" Version="0.0.5" />
+    <PackageReference Include="Tgs.GameWagers.Stat.Daily.Client" Version="1.0.2" />
+    <PackageReference Include="Tgs.Promotion.Client" Version="1.0.47" />
+    <PackageReference Include="Tgs.SerialNumberGenerator" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tgs.Promotion.Milestone.Domain\Tgs.Promotion.Milestone.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
