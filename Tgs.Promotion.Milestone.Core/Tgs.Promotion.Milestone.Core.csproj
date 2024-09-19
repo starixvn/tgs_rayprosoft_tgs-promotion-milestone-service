@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Tgs.Promotion.Milestone.Domain\Tgs.Promotion.Milestone.Domain.csproj" />
   </ItemGroup>
 

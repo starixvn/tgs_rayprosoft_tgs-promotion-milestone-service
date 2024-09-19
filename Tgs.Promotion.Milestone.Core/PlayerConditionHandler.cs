@@ -10,13 +10,13 @@ public class PlayerConditionHandler(IMilestoneRepository milestoneRepository, IM
 {
     public async Task<PlayerCondition> Handle(GetPlayerCondition request, CancellationToken cancellationToken)
     {
-        var condition = await milestoneRepository.GetPlayerConditionAsync(request.BrandId, request.PlayerCode, request.From, request.To, cancellationToken);
-        await manager.PublishAsync("test", "1", cancellationToken: cancellationToken);
+        var (depositAmount, validBetAmount) = await milestoneRepository.GetPlayerConditionAsync(request.BrandId, request.PlayerCode, request.From, request.To, cancellationToken);
+
         return new PlayerCondition
         {
             PlayerCode = request.PlayerCode, 
-            DepositAmount = condition.depositAmount,
-            ValidBetAmount = condition.validBetAmount
+            DepositAmount = depositAmount,
+            ValidBetAmount = validBetAmount
         };
     }
 }
