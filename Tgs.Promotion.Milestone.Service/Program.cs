@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NATS.Client.Core;
-using OpenTelemetry;
 using OpenTelemetry.Instrumentation.AspNetCore;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Tgs.Promotion.Clients.Protos;
@@ -58,7 +56,6 @@ builder.Services
     });
 
 builder.Services.AddOpenTelemetry()
-    .UseOtlpExporter()
     .WithTracing(builder => builder
         .SetResourceBuilder(ResourceBuilder.CreateDefault()
             .AddEnvironmentVariableDetector())
@@ -67,6 +64,7 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
+        .AddOtlpExporter()
         .AddProfileViewExporter())
     .Services
     .Configure<AspNetCoreTraceInstrumentationOptions>(options => options.Filter =
@@ -82,7 +80,6 @@ builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 
