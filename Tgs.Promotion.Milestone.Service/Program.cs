@@ -64,8 +64,8 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
-        .AddOtlpExporter()
-        .AddProfileViewExporter())
+        .AddProfileViewExporter()
+        .AddOtlpExporter())
     .Services
     .Configure<AspNetCoreTraceInstrumentationOptions>(options => options.Filter =
         httpContext => !httpContext.Request.Path.HasValue ||
