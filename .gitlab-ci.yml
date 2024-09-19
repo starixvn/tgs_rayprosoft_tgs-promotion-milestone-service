@@ -25,6 +25,14 @@ unit-test:
   script:
     - dotnet test "**/bin/$BuildConfiguration/$Framework/*Test.dll" -l:'junit;LogFilePath=TestResults/TestResults.xml'
 
+push-nuget:
+  extends: .push-nuget-template
+  script:
+    - push_package "Tgs.Promotion.Milestone.Client"
+  artifacts:
+    paths:
+      - Tgs.Promotion.Milestone.Client/bin/$BuildConfiguration/*.nupkg
+
 push-docker-image:
   extends: .push-docker-image-template
   script:
