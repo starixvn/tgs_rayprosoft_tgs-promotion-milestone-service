@@ -2,4 +2,4 @@
 public record MilestoneSetting(
 	IEnumerable<int> VipLevels,
 	IEnumerable<string>? BucketTypes,
-    IEnumerable<Conditions> Conditions);
+    IEnumerable<Condition> Conditions);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Tgs.Promotion.Clients;
 using Tgs.Promotion.Milestone.Client;
 using Tgs.Promotion.Milestone.Domain.Entities;
 using Tgs.Promotion.Milestone.Domain.Interfaces;
@@ -15,6 +16,7 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
             var fakeDbContext = Substitute.For<tgsContext>();
             var fakePromotionMilestoneClient = Substitute.For<IPromotionMilestoneClient>();
             var fakeRepository = Substitute.For<IMilestoneRepository>();
+            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
             var brandId = Guid.NewGuid();
             var promotionId = Guid.NewGuid();
@@ -31,23 +33,37 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
                         Bonus = 10,
                         DepositAmount = 10,
                         MilestoneLevel = 1,
-                        ValidBetAmount = 10
+                        ValidBetAmount = 10,
+                        CreatedOn = DateTime.Today,
+                        SentOn = DateTime.Today
                     }
                 }.ToAsyncEnumerable());
+
+            var rule = new PromotionRule(new MilestoneSetting([], [], new Condition[]
+            {
+                new Condition
+                    { Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10, Bonus = 10 },
+                new Condition
+                    { Level = 2, MinimumDeposit = 20, MinimumValidBet = 20, TurnoverMultiple = 20, Bonus = 20 }
+            }));
+
+            fakePromotionServiceClient
+                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(rule);
 
             await using var web = new TestApplication(builder => builder.ConfigureServices(services =>
             {
                 services.AddSingleton(fakeDbContext)
                     .AddSingleton(fakePromotionMilestoneClient)
-                    .AddSingleton(fakeRepository);
+                    .AddSingleton(fakeRepository)
+                    .AddSingleton(fakePromotionServiceClient);
             }));
             var httpClient = web.CreateClient();
 
             var sut = new PromotionMilestoneClient(httpClient);
 
-            var response = await sut.GetMilestoneRequirementsFulfilledListAsync(brandId, playerCode).ToArrayAsync();
+            var response = await sut.GetConditionsIncludeCompletedListAsync(brandId, playerCode).ToArrayAsync();
 
-            Assert.Equal(response.Length, 1);
+            Assert.Equal(2, response.Length);
         }
     }
 }

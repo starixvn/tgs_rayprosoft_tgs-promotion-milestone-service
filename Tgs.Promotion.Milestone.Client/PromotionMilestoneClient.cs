@@ -8,15 +8,15 @@ public class PromotionMilestoneClient(HttpClient client) : IPromotionMilestoneCl
 {
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true, DefaultBufferSize = 128 };
 
-    public async IAsyncEnumerable<ValidMilestone> GetMilestoneRequirementsFulfilledListAsync(Guid promotionId, string playerCode)
+    public async IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId, string playerCode)
     {
-        var response = await client.GetAsync($"/api/milestone/valid-list/{promotionId}/{playerCode}", HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        var response = await client.GetAsync($"/api/milestone/conditions-Include-completed/{promotionId}/{playerCode}", HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
         _ = response.EnsureSuccessStatusCode();
 
         var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-        var items = JsonSerializer.DeserializeAsyncEnumerable<ValidMilestone>(
+        var items = JsonSerializer.DeserializeAsyncEnumerable<ConditionIncludeCompleted>(
         responseStream,
             _jsonSerializerOptions);
 

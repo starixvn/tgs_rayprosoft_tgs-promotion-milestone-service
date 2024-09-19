@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using TGS.Core.Infrastructures.Nats.Interface;
 using Tgs.Promotion.Milestone.Domain.Interfaces;
 using Tgs.Promotion.Milestone.Domain.Models;
 
 namespace Tgs.Promotion.Milestone.Core;
 
-public class PlayerConditionHandler(IMilestoneRepository milestoneRepository, IMessageManager manager)
+public class PlayerConditionHandler(IMilestoneRepository milestoneRepository)
     : IRequestHandler<GetPlayerCondition, PlayerCondition>
 {
     public async Task<PlayerCondition> Handle(GetPlayerCondition request, CancellationToken cancellationToken)

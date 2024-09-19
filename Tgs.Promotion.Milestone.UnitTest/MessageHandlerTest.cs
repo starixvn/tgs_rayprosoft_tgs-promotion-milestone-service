@@ -163,7 +163,7 @@ namespace Tgs.Promotion.Milestone.UnitTest
                 .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
                     new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
                     [
-                        new Conditions
+                        new Condition
                             { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
                     ])));
 
@@ -240,7 +240,7 @@ namespace Tgs.Promotion.Milestone.UnitTest
                 .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
                     new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
                     [
-                        new Conditions
+                        new Condition
                             { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
                     ])));
 
@@ -325,7 +325,7 @@ namespace Tgs.Promotion.Milestone.UnitTest
                 .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
                     new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
                     [
-                        new Conditions
+                        new Condition
                             { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
                     ])));
 
@@ -410,7 +410,7 @@ namespace Tgs.Promotion.Milestone.UnitTest
                 .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
                     new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
                     [
-                        new Conditions
+                        new Condition
                             { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
                     ])));
 

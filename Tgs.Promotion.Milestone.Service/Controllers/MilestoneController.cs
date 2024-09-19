@@ -9,10 +9,10 @@ namespace Tgs.Promotion.Milestone.Service.Controllers
     [ApiController]
     public class MilestoneController(ISender sender) : ControllerBase
     {
-        [HttpGet("valid-list/{promotionId:guid}/{playerCode}")]
-        public IAsyncEnumerable<ValidMilestone> GetMilestoneRequirementsFulfilledListAsync(Guid promotionId, string playerCode)
+        [HttpGet("conditions-Include-completed/{promotionId:guid}/{playerCode}")]
+        public IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId, string playerCode)
         {
-            return sender.CreateStream(new GetMilestoneRequirementsFulfilledList(promotionId, playerCode));
+            return sender.CreateStream(new GetConditionsIncludeCompletedList(promotionId, playerCode));
         }
 
         [HttpGet("condition")]
