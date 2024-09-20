@@ -64,6 +64,7 @@ public class MilestoneRepository(tgsContext context) : IMilestoneRepository
         await context.PromotionMilestones.AddAsync(new PromotionMilestone
         {
             Id = model.Id,
+            PromotionId = model.PromotionId,
             BrandId = model.BrandId,
             PlayerCode = model.PlayerCode,
             MilestoneLevel = model.MilestoneLevel,

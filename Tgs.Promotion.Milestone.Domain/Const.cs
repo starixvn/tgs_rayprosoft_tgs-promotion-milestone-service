@@ -8,6 +8,6 @@ namespace Tgs.Promotion.Milestone.Domain
 {
     public static class Const
     {
-        public static string Milestone = "milestone";
+        public static string Milestone = "Milestone";
     }
 }
