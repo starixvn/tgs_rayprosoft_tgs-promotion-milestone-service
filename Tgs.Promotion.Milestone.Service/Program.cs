@@ -9,15 +9,15 @@ using Tgs.Promotion.Milestone.Core.DependencyInjection;
 using Tgs.Promotion.Milestone.Repository.DependencyInjection;
 using Tgs.Promotion.Milestone.Core.NatsMessages;
 using OpenTelemetry.Exporter;
+using Tgs.Promotion.Milestone.Service.NatsSerializers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!)
+builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!, ProtobufSerializerRegistry.Default)
     .RequestReplyRegister<CampaignDetailRequest, CampaignDetailResponse>(typeof(RuleReplyProcessor),
-        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting",
-        NatsRawSerializer<CampaignDetailRequest>.Default)
+        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting")
     .SubscribeRegister<string>(typeof(MilestoneMessageHandler), "tgs.promotion.milestone.distribute",
         "tgs.promotion.milestone.distribute");
 
