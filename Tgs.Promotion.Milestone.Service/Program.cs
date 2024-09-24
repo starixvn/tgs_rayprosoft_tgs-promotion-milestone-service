@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!, ProtobufSerializerRegistry.Default)
     .RequestReplyRegister<CampaignDetailRequest, CampaignDetailResponse>(typeof(RuleReplyProcessor),
         "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting")
-    .RequestReplyRegister<CheckPromotionRequest, bool>(typeof(CheckReplyProcessor),
+    .RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(typeof(CheckReplyProcessor),
         string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()),
         string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()))
     .SubscribeRegister<CheckPromotionRequest>(
