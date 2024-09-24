@@ -9,7 +9,9 @@ using Tgs.Promotion.Milestone.Core.DependencyInjection;
 using Tgs.Promotion.Milestone.Repository.DependencyInjection;
 using Tgs.Promotion.Milestone.Core.NatsMessages;
 using OpenTelemetry.Exporter;
+using Tgs.Promotion;
 using Tgs.Promotion.Milestone.Service.NatsSerializers;
+using Tgs.Promotion.Milestone.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!, ProtobufSerializerRegistry.Default)
     .RequestReplyRegister<CampaignDetailRequest, CampaignDetailResponse>(typeof(RuleReplyProcessor),
         "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting")
+    .RequestReplyRegister<CheckPromotionRequest, bool>(typeof(CheckReplyProcessor),
+        string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()),
+        string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()))
+    .SubscribeRegister<CheckPromotionRequest>(
+        typeof(TagMessageHandler),
+        string.Format(PromotionCheckConsts.TagSubjectTemplate, Const.Milestone.ToLowerInvariant()),
+        string.Format(PromotionCheckConsts.TagSubjectTemplate, Const.Milestone.ToLowerInvariant()))
+    .SubscribeRegister<CheckPromotionRequest>(
+        typeof(RollBackMessageHandler),
+        string.Format(PromotionCheckConsts.RollbackSubjectTemplate, Const.Milestone.ToLowerInvariant()),
+        string.Format(PromotionCheckConsts.RollbackSubjectTemplate, Const.Milestone.ToLowerInvariant()))
+    .SubscribeRegister<CheckPromotionRequest>(
+        typeof(CommitMessageHandler),
+        string.Format(PromotionCheckConsts.CommitSubjectTemplate, Const.Milestone.ToLowerInvariant()),
+        string.Format(PromotionCheckConsts.CommitSubjectTemplate, Const.Milestone.ToLowerInvariant()))
     .SubscribeRegister<string>(typeof(MilestoneMessageHandler), "tgs.promotion.milestone.distribute",
         "tgs.promotion.milestone.distribute");
 

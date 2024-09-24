@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tgs.Core.Infrastructures.Nats" Version="0.0.5" />
+    <PackageReference Include="Tgs.BrandCertificateClient" Version="0.2.6" />
+    <PackageReference Include="Tgs.Core.Infrastructures.Nats" Version="0.0.6" />
+    <PackageReference Include="Tgs.GameWagers.Client" Version="1.0.9" />
     <PackageReference Include="Tgs.GameWagers.Stat.Daily.Client" Version="1.0.2" />
     <PackageReference Include="Tgs.Promotion.Client" Version="1.0.47" />
     <PackageReference Include="Tgs.SerialNumberGenerator" Version="1.0.1" />
