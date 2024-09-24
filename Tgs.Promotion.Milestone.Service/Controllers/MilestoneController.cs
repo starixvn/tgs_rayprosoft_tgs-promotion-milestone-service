@@ -20,7 +20,7 @@ namespace Tgs.Promotion.Milestone.Service.Controllers
         [HttpGet("condition")]
         public Task<PlayerCondition> GetPlayerConditionAsync([FromQuery]GetPlayerConditionRequest request)
         {
-            logger.LogInformation($"condition {request}", request);
+            logger.LogInformation("condition {request}", request);
 
             return sender.Send(new GetPlayerCondition(request.BrandId, request.PlayerCode, request.From,request.To));
         }
