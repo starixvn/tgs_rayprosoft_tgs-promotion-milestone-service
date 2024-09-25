@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Tgs.Core.Infrastructures.Utility;
 using Tgs.Promotion.Milestone.Client.Models;
 
 namespace Tgs.Promotion.Milestone.Client;
 
-public class PromotionMilestoneClient(HttpClient client) : IPromotionMilestoneClient
+public class PromotionMilestoneClient(HttpClient client, ILogger<PromotionMilestoneClient> logger) : IPromotionMilestoneClient
 {
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true, DefaultBufferSize = 128 };
 
@@ -27,9 +28,14 @@ public class PromotionMilestoneClient(HttpClient client) : IPromotionMilestoneCl
     }
 
     public async ValueTask<PlayerCondition> GetPlayerConditionAsync(Guid brandId, string playerCode, DateTime from, DateTime to,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("GetPlayerConditionAsync {brandId} {playerCode} {from} {to}", brandId, playerCode, from,
+            to);
+
         var path = ClientPath.AppendWithProperties("/api/milestone/condition?", new { BrandId =brandId, PlayerCode = playerCode, From = from, To = to });
+
+        logger.LogInformation("GetPlayerConditionAsync {path}", path);
 
         var response = await client.GetAsync(path, cancellationToken).ConfigureAwait(false);
 
