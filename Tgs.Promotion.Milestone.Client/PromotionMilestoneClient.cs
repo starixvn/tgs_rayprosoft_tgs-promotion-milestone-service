@@ -7,7 +7,7 @@ namespace Tgs.Promotion.Milestone.Client;
 
 public class PromotionMilestoneClient(HttpClient client, ILogger<PromotionMilestoneClient> logger) : IPromotionMilestoneClient
 {
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true, DefaultBufferSize = 1 };
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     public async IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId, string playerCode)
     {
@@ -31,7 +31,7 @@ public class PromotionMilestoneClient(HttpClient client, ILogger<PromotionMilest
     {
         logger.LogInformation("GetPlayerConditionAsync {brandId} {playerCode} {promotionId}", request.BrandId, request.PlayerCode, request.PromotionId);
 
-        var path = ClientPath.AppendWithProperties("/api/milestone/condition?", new { request.BrandId, request.PlayerCode, request.PromotionId });
+        var path = ClientPath.AppendWithProperties("/api/milestone/condition?", request);
 
         logger.LogInformation("GetPlayerConditionAsync {path}", path);
 
