@@ -31,7 +31,7 @@ public class PromotionMilestoneClient(HttpClient client) : IPromotionMilestoneCl
     {
         var path = ClientPath.AppendWithProperties("/api/milestone/condition?", new { BrandId =brandId, PlayerCode = playerCode, From = from, To = to });
 
-        var response = await client.GetAsync(path, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await client.GetAsync(path, cancellationToken).ConfigureAwait(false);
 
         _ = response.EnsureSuccessStatusCode();
 
