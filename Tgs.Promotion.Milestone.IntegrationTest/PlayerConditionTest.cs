@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Castle.Core.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Tgs.Promotion.Milestone.Client;
 using Tgs.Promotion.Milestone.Domain.Entities;
@@ -14,6 +16,7 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
             var fakeDbContext = Substitute.For<tgsContext>();
             var fakePromotionMilestoneClient = Substitute.For<IPromotionMilestoneClient>();
             var fakeRepository = Substitute.For<IMilestoneRepository>();
+            var fakeLogger = Substitute.For<ILogger<PromotionMilestoneClient>>();
 
             var brandId = Guid.NewGuid();
             var promotionId = Guid.NewGuid();
@@ -26,11 +29,12 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
             {
                 services.AddSingleton(fakeDbContext)
                     .AddSingleton(fakePromotionMilestoneClient)
-                    .AddSingleton(fakeRepository);
+                    .AddSingleton(fakeRepository)
+                    .AddSingleton(fakeLogger);
             }));
             var httpClient = web.CreateClient();
 
-            var sut = new PromotionMilestoneClient(httpClient);
+            var sut = new PromotionMilestoneClient(httpClient, fakeLogger);
 
             await sut.GetPlayerConditionAsync(brandId, playerCode, DateTime.Today.AddDays(-5), DateTime.Today, default);
 

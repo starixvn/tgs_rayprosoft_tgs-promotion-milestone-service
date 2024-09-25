@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Milestone.Client;
@@ -17,6 +18,7 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
             var fakePromotionMilestoneClient = Substitute.For<IPromotionMilestoneClient>();
             var fakeRepository = Substitute.For<IMilestoneRepository>();
             var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+            var fakeLogger = Substitute.For<ILogger<PromotionMilestoneClient>>();
 
             var brandId = Guid.NewGuid();
             var promotionId = Guid.NewGuid();
@@ -55,11 +57,12 @@ namespace Tgs.Promotion.Milestone.IntegrationTest
                 services.AddSingleton(fakeDbContext)
                     .AddSingleton(fakePromotionMilestoneClient)
                     .AddSingleton(fakeRepository)
-                    .AddSingleton(fakePromotionServiceClient);
+                    .AddSingleton(fakePromotionServiceClient)
+                    .AddSingleton(fakeLogger);
             }));
             var httpClient = web.CreateClient();
 
-            var sut = new PromotionMilestoneClient(httpClient);
+            var sut = new PromotionMilestoneClient(httpClient, fakeLogger);
 
             var response = await sut.GetConditionsIncludeCompletedListAsync(brandId, playerCode).ToArrayAsync();
 
