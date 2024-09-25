@@ -22,7 +22,7 @@ namespace Tgs.Promotion.Milestone.Service.Controllers
         {
             logger.LogInformation("condition {request}", request);
 
-            return sender.Send(new GetPlayerCondition(request.BrandId, request.PlayerCode, request.From,request.To));
+            return sender.Send(new GetPlayerCondition(request.BrandId, request.PromotionId, request.PlayerCode));
         }
     }
 }

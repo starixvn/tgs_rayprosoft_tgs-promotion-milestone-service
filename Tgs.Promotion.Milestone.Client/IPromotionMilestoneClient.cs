@@ -6,6 +6,5 @@ public interface IPromotionMilestoneClient
 {
     IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId, string playerCode);
 
-    ValueTask<PlayerCondition> GetPlayerConditionAsync(Guid brandId, string playerCode, DateTime from, DateTime to,
-        CancellationToken cancellationToken);
+    ValueTask<PlayerCondition> GetPlayerConditionAsync(GetPlayerConditionRequest request);
 }

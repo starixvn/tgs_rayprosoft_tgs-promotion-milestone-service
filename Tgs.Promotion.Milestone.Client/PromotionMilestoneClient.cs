@@ -27,22 +27,20 @@ public class PromotionMilestoneClient(HttpClient client, ILogger<PromotionMilest
         }
     }
 
-    public async ValueTask<PlayerCondition> GetPlayerConditionAsync(Guid brandId, string playerCode, DateTime from, DateTime to,
-        CancellationToken cancellationToken = default)
+    public async ValueTask<PlayerCondition> GetPlayerConditionAsync(GetPlayerConditionRequest request)
     {
-        logger.LogInformation("GetPlayerConditionAsync {brandId} {playerCode} {from} {to}", brandId, playerCode, from,
-            to);
+        logger.LogInformation("GetPlayerConditionAsync {brandId} {playerCode} {promotionId}", request.BrandId, request.PlayerCode, request.PromotionId);
 
-        var path = ClientPath.AppendWithProperties("/api/milestone/condition?", new { BrandId =brandId, PlayerCode = playerCode, From = from, To = to });
+        var path = ClientPath.AppendWithProperties("/api/milestone/condition?", new { request.BrandId, request.PlayerCode, request.PromotionId });
 
         logger.LogInformation("GetPlayerConditionAsync {path}", path);
 
-        var response = await client.GetAsync(path, cancellationToken).ConfigureAwait(false);
+        var response = await client.GetAsync(path).ConfigureAwait(false);
 
         _ = response.EnsureSuccessStatusCode();
 
         return JsonSerializer.Deserialize<PlayerCondition>(
-            await response.Content.ReadAsStringAsync(cancellationToken),
+            await response.Content.ReadAsStringAsync(),
             _jsonSerializerOptions)!;
     }
 }
