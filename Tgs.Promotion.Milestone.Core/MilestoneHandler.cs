@@ -7,7 +7,7 @@ using Tgs.Promotion.Milestone.Domain.Models;
 namespace Tgs.Promotion.Milestone.Core;
 
 public class MilestoneHandler(
-    IPromotionServiceClient promotionServiceClient, 
+    IPromotionServiceClient promotionServiceClient,
     IMilestoneRepository milestoneRepository)
     : IStreamRequestHandler<GetConditionsIncludeCompletedList, ConditionIncludeCompleted>
 {
@@ -18,10 +18,11 @@ public class MilestoneHandler(
             request.PromotionId,
             cancellationToken).ConfigureAwait(false);
 
-        var list = await milestoneRepository.GetRequirementsFulfilledListAsync(request.PromotionId, request.PlayerCode, cancellationToken).ToArrayAsync(cancellationToken);
+        var list = await milestoneRepository
+            .GetRequirementsFulfilledListAsync(request.PromotionId, request.PlayerCode, cancellationToken)
+            .ToArrayAsync(cancellationToken);
 
         foreach (var campaignDetailCondition in rule?.CampaignDetail.Conditions!)
-        {
             yield return new ConditionIncludeCompleted
             {
                 Level = campaignDetailCondition.Level,
@@ -30,6 +31,5 @@ public class MilestoneHandler(
                 Bonus = campaignDetailCondition.Bonus,
                 IsSent = list.FirstOrDefault(x => x.MilestoneLevel == campaignDetailCondition.Level)?.SentOn != null
             };
-        }
     }
 }

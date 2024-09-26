@@ -1,20 +1,14 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Tgs.Promotion.Milestone.Domain.Entities;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using NATS.Client.Core;
-using NATS.Client.JetStream;
-using NATS.Client.JetStream.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using TGS.Core.Infrastructures.Nats;
-using TGS.Core.Infrastructures.Nats.Interface;
-using TGS.Core.Infrastructures.Nats.Worker;
+using Tgs.Promotion.Milestone.Domain.Entities;
 
 namespace Tgs.Promotion.Milestone.IntegrationTest;
 

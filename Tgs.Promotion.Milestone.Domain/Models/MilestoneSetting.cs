@@ -1,5 +1,6 @@
 ﻿namespace Tgs.Promotion.Milestone.Domain.Models;
+
 public record MilestoneSetting(
-	IEnumerable<int> VipLevels,
-	IEnumerable<string>? BucketTypes,
+    IEnumerable<int> VipLevels,
+    IEnumerable<string>? BucketTypes,
     IEnumerable<Condition> Conditions);

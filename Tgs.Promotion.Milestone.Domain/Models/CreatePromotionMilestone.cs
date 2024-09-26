@@ -1,6 +1,4 @@
-﻿using Tgs.Promotion.Milestone.Domain.Enums;
-
-namespace Tgs.Promotion.Milestone.Domain.Models;
+﻿namespace Tgs.Promotion.Milestone.Domain.Models;
 
 public class CreatePromotionMilestone
 {

@@ -13,9 +13,7 @@ public partial class tgsContext : DbContext
         : base(options)
     {
     }
-    public tgsContext()
-    {
-    }
+
     public virtual DbSet<FiveMinutesPaymentStatistic> FiveMinutesPaymentStatistics { get; set; }
 
     public virtual DbSet<GameWagerStatDailyClose> GameWagerStatDailyCloses { get; set; }

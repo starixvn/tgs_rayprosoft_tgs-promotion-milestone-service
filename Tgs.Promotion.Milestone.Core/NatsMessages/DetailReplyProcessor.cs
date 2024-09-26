@@ -1,37 +1,34 @@
-﻿//using Microsoft.Extensions.Logging;
-//using NATS.Client.Core;
-//using System.Text.Json;
-//using Tgs.Promotion.Clients.Protos;
-//using TGS.Core.Infrastructures.Nats.Interface;
-//using Tgs.Promotion.Milestone.Domain.Models;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using NATS.Client.Core;
+using TGS.Core.Infrastructures.Nats.Interface;
+using Tgs.Promotion.Milestone.Domain.Interfaces;
 
-//namespace Tgs.Promotion.Milestone.Core.NatsMessages
-//{
-//    public class DetailReplyProcessor(ILogger<DetailReplyProcessor> logger) : IMessageReplyHandler<CampaignDetailRequest, CampaignDetailResponse>
-//    {
-//        public Task<CampaignDetailResponse> Handle(string subject, string? queueGroup, NatsHeaders? natsHeaders, CampaignDetailRequest? message,
-//            CancellationToken cancellationToken)
-//        {
-//            var settings = JsonSerializer.Deserialize<MilestoneSetting>(
-//                               message!.Settings,
-//                               PromotionUtility.SerializerOptions) ??
-//                           throw new NullReferenceException("Deserialize MilestoneSetting is null");
+namespace Tgs.Promotion.Milestone.Core.NatsMessages;
 
-//            logger.LogDebug("Milestone setting : {settings}", settings);
+public class DetailReplyProcessor(ILogger<DetailReplyProcessor> logger, IMilestoneRepository repository)
+    : IMessageReplyHandler<DistributedDetailRequest, DistributedDetailResponse>
+{
+    public async Task<DistributedDetailResponse> Handle(string subject, string? queueGroup,
+        NatsHeaders? natsHeaders, DistributedDetailRequest? message,
+        CancellationToken cancellationToken)
+    {
+        var milestone = await repository.GetRequirementsFulfilledByIdAsync(message.PromotionId,
+            message.ReferenceId,
+            cancellationToken);
 
-//            settings = settings with
-//            {
-//                BucketTypes = settings.BucketTypes?.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray()
-//            };
+        var response = new DistributedDetailResponse
+        {
+            Detail = milestone != null
+                ? JsonSerializer.Serialize(
+                    new
+                    {
+                        milestone.MilestoneLevel
+                    },
+                    PromotionUtility.SerializerOptions)
+                : null
+        };
 
-//            var response = new CampaignDetailResponse
-//            {
-//                CampaignDetail = JsonSerializer.Serialize(
-//                    settings,
-//                    PromotionUtility.SerializerOptions)
-//            };
-
-//            return Task.FromResult(response);
-//        }
-//    }
-//}
+        return response;
+    }
+}

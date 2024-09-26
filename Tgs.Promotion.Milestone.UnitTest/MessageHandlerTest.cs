@@ -7,432 +7,441 @@ using Tgs.Promotion.Milestone.Domain.Interfaces;
 using Tgs.Promotion.Milestone.Domain.Models;
 using Tgs.SerialNumberGenerator;
 
-namespace Tgs.Promotion.Milestone.UnitTest
+namespace Tgs.Promotion.Milestone.UnitTest;
+
+public class MessageHandlerTest
 {
-    public class MessageHandlerTest
+    [Theory]
+    [InlineData(-1, 5)]
+    [InlineData(0, 5)]
+    [InlineData(-10, 0)]
+    public async Task Get_Valid_Promotions(int from, int to)
     {
-        [Theory]
-        [InlineData(-1, 5)]
-        [InlineData(0, 5)]
-        [InlineData(-10, 0)]
-        public async Task Get_Valid_Promotions(int from, int to)
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
+
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
+
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+        var promotionId2 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-            var promotionId2 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
-                },
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId2,
-                    EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
-                },
-            };
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
+            },
+            new()
+            {
+                BrandId = brandId, Id = promotionId2,
+                EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
+            }
+        };
 
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
 
-            await sut.Handle("subject", "group", default, "1", default);
+        await sut.Handle("subject", "group", default, "1", default);
 
-            await fakePromotionServiceClient.Received(2)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        }
+        await fakePromotionServiceClient.Received(2)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
 
-        [Theory]
-        [InlineData(1, 5)]
-        [InlineData(2, 5)]
-        [InlineData(3, 10)]
-        public async Task Get_InValid_Promotions(int from, int to)
+    [Theory]
+    [InlineData(1, 5)]
+    [InlineData(2, 5)]
+    [InlineData(3, 10)]
+    public async Task Get_InValid_Promotions(int from, int to)
+    {
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
+
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
+
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
-                },
-            };
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(from).UtcDateTime, To = today.AddDays(to).UtcDateTime }
+            }
+        };
 
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
 
-            await sut.Handle("subject", "group", default, "1", default);
+        await sut.Handle("subject", "group", default, "1", default);
 
-            await fakePromotionServiceClient.Received(0)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        }
+        await fakePromotionServiceClient.Received(0)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
 
-        [Fact]
-        public async Task Create_Promotions()
+    [Fact]
+    public async Task Create_Promotions()
+    {
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
+
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
+
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
-                }
-            };
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
+            }
+        };
 
-            var playerConditions = new PlayerCondition[]
-            {
-                new PlayerCondition
-                {
-                    PlayerCode = "p1",
-                    DepositAmount = 10,
-                    ValidBetAmount = 10,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p2",
-                    DepositAmount = 11,
-                    ValidBetAmount = 11,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p3",
-                    DepositAmount = 8,
-                    ValidBetAmount = 11,
-                }
-            };
-
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
-
-            fakePromotionServiceClient
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
-                    new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
-                    [
-                        new Condition
-                            { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
-                    ])));
-
-            fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
-                Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
-
-            fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((null, null));
-
-            await sut.Handle("subject", "group", default, "1", default);
-
-            await fakePromotionServiceClient.Received(1)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-
-            await fakeMilestoneRepository.Received(2).CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
-        }
-
-        [Fact]
-        public async Task Distribute_Promotions()
+        var playerConditions = new PlayerCondition[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
-                }
-            };
-
-            var playerConditions = new PlayerCondition[]
+                PlayerCode = "p1",
+                DepositAmount = 10,
+                ValidBetAmount = 10
+            },
+            new()
             {
-                new PlayerCondition
-                {
-                    PlayerCode = "p1",
-                    DepositAmount = 10,
-                    ValidBetAmount = 10,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p2",
-                    DepositAmount = 11,
-                    ValidBetAmount = 11,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p3",
-                    DepositAmount = 8,
-                    ValidBetAmount = 11,
-                }
-            };
+                PlayerCode = "p2",
+                DepositAmount = 11,
+                ValidBetAmount = 11
+            },
+            new()
+            {
+                PlayerCode = "p3",
+                DepositAmount = 8,
+                ValidBetAmount = 11
+            }
+        };
 
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
 
-            fakePromotionServiceClient
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
-                    new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
-                    [
-                        new Condition
-                            { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
-                    ])));
+        fakePromotionServiceClient
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+                new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
+                [
+                    new Condition
+                        { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
+                ])));
 
-            fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
-                Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
+        fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
+            Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
 
-            fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((null, null));
+        fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((null, null));
 
-            fakePromotionServiceClient
-                .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
-                .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
+        await sut.Handle("subject", "group", default, "1", default);
 
-            await sut.Handle("subject", "group", default, "1", default);
+        await fakePromotionServiceClient.Received(1)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
 
-            await fakePromotionServiceClient.Received(1)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await fakeMilestoneRepository.Received(2)
+            .CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
+    }
 
-            await fakeMilestoneRepository.Received(2).CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
+    [Fact]
+    public async Task Distribute_Promotions()
+    {
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
 
-            await fakePromotionServiceClient.Received(2).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
-                Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
-                Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
-        }
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
 
-        [Fact]
-        public async Task Distribute_Promotions_With_Exists_Milestone_Record()
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
-                }
-            };
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
+            }
+        };
 
-            var playerConditions = new PlayerCondition[]
-            {
-                new PlayerCondition
-                {
-                    PlayerCode = "p1",
-                    DepositAmount = 10,
-                    ValidBetAmount = 10,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p2",
-                    DepositAmount = 11,
-                    ValidBetAmount = 11,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p3",
-                    DepositAmount = 8,
-                    ValidBetAmount = 11,
-                }
-            };
-
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
-
-            fakePromotionServiceClient
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
-                    new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
-                    [
-                        new Condition
-                            { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
-                    ])));
-
-            fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
-                Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
-
-            fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((Guid.NewGuid(), null));
-
-            fakePromotionServiceClient
-                .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
-                .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
-
-            await sut.Handle("subject", "group", default, "1", default);
-
-            await fakePromotionServiceClient.Received(1)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-
-            await fakeMilestoneRepository.Received(0).CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
-
-            await fakePromotionServiceClient.Received(2).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
-                Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
-                Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
-        }
-
-        [Fact]
-        public async Task Distribute_Promotions_When_Already_Sent()
+        var playerConditions = new PlayerCondition[]
         {
-            var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-            var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
-            var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
-            var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
-
-            var sut = new MilestoneMessageHandler(
-                fakePromotionServiceClient,
-                fakeSerialNumberGenerator,
-                fakeMilestoneRepository,
-                fakeLogger);
-
-            var brandId = Guid.NewGuid();
-            var promotionId1 = Guid.NewGuid();
-
-            var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
-
-            var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
-
-            var promotions = new PromotionMainInfo[]
+            new()
             {
-                new PromotionMainInfo
-                {
-                    BrandId = brandId, Id = promotionId1,
-                    EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
-                }
-            };
-
-            var playerConditions = new PlayerCondition[]
+                PlayerCode = "p1",
+                DepositAmount = 10,
+                ValidBetAmount = 10
+            },
+            new()
             {
-                new PlayerCondition
-                {
-                    PlayerCode = "p1",
-                    DepositAmount = 10,
-                    ValidBetAmount = 10,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p2",
-                    DepositAmount = 11,
-                    ValidBetAmount = 11,
-                },
-                new PlayerCondition
-                {
-                    PlayerCode = "p3",
-                    DepositAmount = 8,
-                    ValidBetAmount = 11,
-                }
-            };
+                PlayerCode = "p2",
+                DepositAmount = 11,
+                ValidBetAmount = 11
+            },
+            new()
+            {
+                PlayerCode = "p3",
+                DepositAmount = 8,
+                ValidBetAmount = 11
+            }
+        };
 
-            fakePromotionServiceClient
-                .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
-                .Returns(promotions.ToAsyncEnumerable());
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
 
-            fakePromotionServiceClient
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
-                    new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
-                    [
-                        new Condition
-                            { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
-                    ])));
+        fakePromotionServiceClient
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+                new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
+                [
+                    new Condition
+                        { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
+                ])));
 
-            fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
-                Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
+        fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
+            Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
 
-            fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((Guid.NewGuid(), Guid.NewGuid()));
+        fakeMilestoneRepository.GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns((null, null));
 
-            fakePromotionServiceClient
-                .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
-                .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
+        fakePromotionServiceClient
+            .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
 
-            await sut.Handle("subject", "group", default, "1", default);
+        await sut.Handle("subject", "group", default, "1", default);
 
-            await fakePromotionServiceClient.Received(1)
-                .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await fakePromotionServiceClient.Received(1)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
 
-            await fakeMilestoneRepository.Received(0).CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
+        await fakeMilestoneRepository.Received(2)
+            .CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
 
-            await fakePromotionServiceClient.Received(0).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
-                Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
-                Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
-        }
+        await fakePromotionServiceClient.Received(2).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
+            Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Distribute_Promotions_With_Exists_Milestone_Record()
+    {
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
+
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
+
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
+        {
+            new()
+            {
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
+            }
+        };
+
+        var playerConditions = new PlayerCondition[]
+        {
+            new()
+            {
+                PlayerCode = "p1",
+                DepositAmount = 10,
+                ValidBetAmount = 10
+            },
+            new()
+            {
+                PlayerCode = "p2",
+                DepositAmount = 11,
+                ValidBetAmount = 11
+            },
+            new()
+            {
+                PlayerCode = "p3",
+                DepositAmount = 8,
+                ValidBetAmount = 11
+            }
+        };
+
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
+
+        fakePromotionServiceClient
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+                new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
+                [
+                    new Condition
+                        { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
+                ])));
+
+        fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
+            Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
+
+        fakeMilestoneRepository
+            .GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>()).Returns((Guid.NewGuid(), null));
+
+        fakePromotionServiceClient
+            .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
+
+        await sut.Handle("subject", "group", default, "1", default);
+
+        await fakePromotionServiceClient.Received(1)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        await fakeMilestoneRepository.Received(0)
+            .CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
+
+        await fakePromotionServiceClient.Received(2).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
+            Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Distribute_Promotions_When_Already_Sent()
+    {
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
+        var fakeMilestoneRepository = Substitute.For<IMilestoneRepository>();
+        var fakeLogger = Substitute.For<ILogger<MilestoneMessageHandler>>();
+
+        var sut = new MilestoneMessageHandler(
+            fakePromotionServiceClient,
+            fakeSerialNumberGenerator,
+            fakeMilestoneRepository,
+            fakeLogger);
+
+        var brandId = Guid.NewGuid();
+        var promotionId1 = Guid.NewGuid();
+
+        var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(8));
+
+        var today = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, now.Offset);
+
+        var promotions = new PromotionMainInfo[]
+        {
+            new()
+            {
+                BrandId = brandId, Id = promotionId1,
+                EventDuring = new During { From = today.AddDays(-1).UtcDateTime, To = today.AddDays(5).UtcDateTime }
+            }
+        };
+
+        var playerConditions = new PlayerCondition[]
+        {
+            new()
+            {
+                PlayerCode = "p1",
+                DepositAmount = 10,
+                ValidBetAmount = 10
+            },
+            new()
+            {
+                PlayerCode = "p2",
+                DepositAmount = 11,
+                ValidBetAmount = 11
+            },
+            new()
+            {
+                PlayerCode = "p3",
+                DepositAmount = 8,
+                ValidBetAmount = 11
+            }
+        };
+
+        fakePromotionServiceClient
+            .ListPromotionsByPromotionTypeAsync(Arg.Is(Const.Milestone), Arg.Any<CancellationToken>())
+            .Returns(promotions.ToAsyncEnumerable());
+
+        fakePromotionServiceClient
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+                new PromotionRule(new MilestoneSetting([1, 2, 3], ["Slot", "Sports"],
+                [
+                    new Condition
+                        { Bonus = 10, Level = 1, MinimumDeposit = 10, MinimumValidBet = 10, TurnoverMultiple = 10 }
+                ])));
+
+        fakeMilestoneRepository.GetConditionsAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
+            Arg.Any<DateTime>(), Arg.Any<CancellationToken>()).Returns(playerConditions.ToAsyncEnumerable());
+
+        fakeMilestoneRepository
+            .GetMilestoneByLevelAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>()).Returns((Guid.NewGuid(), Guid.NewGuid()));
+
+        fakePromotionServiceClient
+            .GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), brandId, promotionId1, 123));
+
+        await sut.Handle("subject", "group", default, "1", default);
+
+        await fakePromotionServiceClient.Received(1)
+            .GetPromotionRuleAsync<PromotionRule>(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        await fakeMilestoneRepository.Received(0)
+            .CreateMilestoneAsync(Arg.Any<CreatePromotionMilestone>(), Arg.Any<CancellationToken>());
+
+        await fakePromotionServiceClient.Received(0).DistributePromotionBonusAsync(Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<decimal>(), Arg.Any<decimal>(), Arg.Any<string?>(), Arg.Any<Guid?>(),
+            Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
     }
 }

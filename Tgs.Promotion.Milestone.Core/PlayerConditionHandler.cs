@@ -5,7 +5,9 @@ using Tgs.Promotion.Milestone.Domain.Models;
 
 namespace Tgs.Promotion.Milestone.Core;
 
-public class PlayerConditionHandler(IPromotionServiceClient promotionServiceClient, IMilestoneRepository milestoneRepository)
+public class PlayerConditionHandler(
+    IPromotionServiceClient promotionServiceClient,
+    IMilestoneRepository milestoneRepository)
     : IRequestHandler<GetPlayerCondition, PlayerCondition>
 {
     public async Task<PlayerCondition> Handle(GetPlayerCondition request, CancellationToken cancellationToken)

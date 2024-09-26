@@ -4,7 +4,8 @@ namespace Tgs.Promotion.Milestone.Client;
 
 public interface IPromotionMilestoneClient
 {
-    IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId, string playerCode);
+    IAsyncEnumerable<ConditionIncludeCompleted> GetConditionsIncludeCompletedListAsync(Guid promotionId,
+        string playerCode);
 
     ValueTask<PlayerCondition> GetPlayerConditionAsync(GetPlayerConditionRequest request);
 }

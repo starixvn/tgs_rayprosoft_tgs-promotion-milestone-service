@@ -1,25 +1,28 @@
 using Microsoft.EntityFrameworkCore;
-using NATS.Client.Core;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Tgs.Promotion.Clients.Protos;
 using TGS.Core.Infrastructures.Nats;
-using Tgs.Promotion.Milestone.Core.DependencyInjection;
-using Tgs.Promotion.Milestone.Repository.DependencyInjection;
-using Tgs.Promotion.Milestone.Core.NatsMessages;
-using OpenTelemetry.Exporter;
 using Tgs.Promotion;
-using Tgs.Promotion.Milestone.Service.NatsSerializers;
+using Tgs.Promotion.Clients.Protos;
+using Tgs.Promotion.Milestone.Core.DependencyInjection;
+using Tgs.Promotion.Milestone.Core.NatsMessages;
 using Tgs.Promotion.Milestone.Domain;
+using Tgs.Promotion.Milestone.Repository.DependencyInjection;
+using Tgs.Promotion.Milestone.Service.NatsSerializers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!, ProtobufSerializerRegistry.Default)
-    .RequestReplyRegister<CampaignDetailRequest, CampaignDetailResponse>(typeof(RuleReplyProcessor),
-        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting")
+builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!)
+    .RequestReplyRegister(typeof(RuleReplyProcessor),
+        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting",
+        ProtobufSerializerRegistry.Default.GetDeserializer<CampaignDetailRequest>(),
+        ProtobufSerializerRegistry.Default.GetSerializer<CampaignDetailResponse>())
+    .RequestReplyRegister<DistributedDetailRequest, DistributedDetailResponse>(typeof(DetailReplyProcessor),
+        "tgs.promotion.milestone.detail", "tgs.promotion.milestone.detail")
     .RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
         typeof(CheckReplyProcessor),
         string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()),
@@ -46,7 +49,7 @@ builder.Services
         dbBuilder => dbBuilder
             .UseNpgsql("name=Tgs"))
     .AddPromotionClientServices((opts, _) => opts.Url =
-    builder.Configuration.GetValue<Uri>("Milestone:PromotionServiceBaseUrl")!);
+        builder.Configuration.GetValue<Uri>("Milestone:PromotionServiceBaseUrl")!);
 
 builder.Logging
     .AddOpenTelemetry(options =>

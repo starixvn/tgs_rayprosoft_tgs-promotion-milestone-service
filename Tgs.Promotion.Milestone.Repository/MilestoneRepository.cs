@@ -26,16 +26,16 @@ public class MilestoneRepository(tgsContext context) : IMilestoneRepository
             .Where(x => x.BrandId == brandId)
             .Where(x => x.ReportDateTime >= from && x.ReportDateTime < to)
             .GroupBy(x => x.PlayerCode, (playerCode, list) => new PlayerCondition
-        {
-            PlayerCode = playerCode,
-            ValidBetAmount = list.Sum(s => s.OriginalTurnover)
-        }).ToAsyncEnumerable();
+            {
+                PlayerCode = playerCode,
+                ValidBetAmount = list.Sum(s => s.OriginalTurnover)
+            }).ToAsyncEnumerable();
 
         return deposits.Concat(validBets).GroupBy(x => x.PlayerCode).SelectAwait(async x => new PlayerCondition
         {
             PlayerCode = x.Key,
-            DepositAmount = await x.SumAsync(s => s.DepositAmount, cancellationToken: cancellationToken),
-            ValidBetAmount = await x.SumAsync(s => s.ValidBetAmount, cancellationToken: cancellationToken)
+            DepositAmount = await x.SumAsync(s => s.DepositAmount, cancellationToken),
+            ValidBetAmount = await x.SumAsync(s => s.ValidBetAmount, cancellationToken)
         });
     }
 
@@ -59,22 +59,42 @@ public class MilestoneRepository(tgsContext context) : IMilestoneRepository
             }).ToAsyncEnumerable();
     }
 
+    public async Task<ValidMilestone?> GetRequirementsFulfilledByIdAsync(Guid promotionId, Guid milestoneId,
+        CancellationToken cancellationToken)
+    {
+        return await context.PromotionMilestones
+            .Where(x => x.PromotionId == promotionId && x.Id == milestoneId)
+            .Include(x => x.PromotionDistribute)
+            .Select(x => new ValidMilestone
+            {
+                PromotionId = x.PromotionId,
+                PlayerCode = x.PlayerCode,
+                MilestoneLevel = x.MilestoneLevel,
+                Bonus = x.Bonus,
+                BucketAmount = x.BucketAmount,
+                DepositAmount = x.DepositAmount,
+                ValidBetAmount = x.ValidBetAmount,
+                CreatedOn = x.CreatedOn,
+                SentOn = x.PromotionDistribute == null ? null : x.PromotionDistribute.SentOn
+            }).FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task CreateMilestoneAsync(CreatePromotionMilestone model, CancellationToken cancellationToken)
     {
         await context.PromotionMilestones.AddAsync(new PromotionMilestone
-        {
-            Id = model.Id,
-            PromotionId = model.PromotionId,
-            BrandId = model.BrandId,
-            PlayerCode = model.PlayerCode,
-            MilestoneLevel = model.MilestoneLevel,
-            Bonus = model.Bonus,
-            BucketAmount = model.BucketAmount,
-            DepositAmount = model.DepositAmount,
-            ValidBetAmount = model.ValidBetAmount,
-            CreatedOn = DateTime.UtcNow
-        }, cancellationToken)
-        .ConfigureAwait(false);
+            {
+                Id = model.Id,
+                PromotionId = model.PromotionId,
+                BrandId = model.BrandId,
+                PlayerCode = model.PlayerCode,
+                MilestoneLevel = model.MilestoneLevel,
+                Bonus = model.Bonus,
+                BucketAmount = model.BucketAmount,
+                DepositAmount = model.DepositAmount,
+                ValidBetAmount = model.ValidBetAmount,
+                CreatedOn = DateTime.UtcNow
+            }, cancellationToken)
+            .ConfigureAwait(false);
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -82,13 +102,14 @@ public class MilestoneRepository(tgsContext context) : IMilestoneRepository
     public async Task UpdateMilestoneReferenceIdAsync(Guid id, Guid distributeId, CancellationToken cancellationToken)
     {
         await context.PromotionMilestones.Where(x => x.Id == id).ExecuteUpdateAsync(
-            x => x.SetProperty(p => p.PromotionDistributeId, distributeId), cancellationToken: cancellationToken)
+                x => x.SetProperty(p => p.PromotionDistributeId, distributeId), cancellationToken)
             .ConfigureAwait(false);
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<(Guid? id, Guid? promotionDistributeId)> GetMilestoneByLevelAsync(Guid brandId, Guid promotionId, string playerCode, int milestoneLevel, CancellationToken cancellationToken)
+    public async Task<(Guid? id, Guid? promotionDistributeId)> GetMilestoneByLevelAsync(Guid brandId, Guid promotionId,
+        string playerCode, int milestoneLevel, CancellationToken cancellationToken)
     {
         var milestone = await context.PromotionMilestones.FirstOrDefaultAsync(x =>
             x.BrandId == brandId && x.PromotionId == promotionId && x.PlayerCode == playerCode &&

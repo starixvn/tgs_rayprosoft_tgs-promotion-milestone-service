@@ -86,7 +86,6 @@ public class MilestoneMessageHandler(
                     var bucketAmount = campaignDetailCondition.TurnoverMultiple * campaignDetailCondition.Bonus;
 
                     if (milestone.id is null)
-                    {
                         await milestoneRepository.CreateMilestoneAsync(new CreatePromotionMilestone
                         {
                             Id = id,
@@ -99,11 +98,8 @@ public class MilestoneMessageHandler(
                             ValidBetAmount = playerCondition.ValidBetAmount,
                             PlayerCode = playerCondition.PlayerCode
                         }, ct).ConfigureAwait(false);
-                    }
                     else
-                    {
                         id = milestone.id.Value;
-                    }
 
                     if (milestone.promotionDistributeId is null)
                     {
