@@ -11,18 +11,19 @@ using Tgs.Promotion.Milestone.Core.NatsMessages;
 using Tgs.Promotion.Milestone.Domain;
 using Tgs.Promotion.Milestone.Repository.DependencyInjection;
 using Tgs.Promotion.Milestone.Service.NatsSerializers;
+using NATS.Client.Serializers.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!)
-    .RequestReplyRegister(typeof(RuleReplyProcessor),
-        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting",
-        ProtobufSerializerRegistry.Default.GetDeserializer<CampaignDetailRequest>(),
-        ProtobufSerializerRegistry.Default.GetSerializer<CampaignDetailResponse>())
+builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!, ProtobufSerializerRegistry.Default)
+    .RequestReplyRegister<CampaignDetailRequest,CampaignDetailResponse>(typeof(RuleReplyProcessor),
+        "tgs.promotion.milestone.setting", "tgs.promotion.milestone.setting")
     .RequestReplyRegister<DistributedDetailRequest, DistributedDetailResponse>(typeof(DetailReplyProcessor),
-        "tgs.promotion.milestone.detail", "tgs.promotion.milestone.detail")
+        "tgs.promotion.milestone.detail", "tgs.promotion.milestone.detail",
+        NatsJsonSerializerRegistry.Default.GetDeserializer<DistributedDetailRequest>(),
+        NatsJsonSerializerRegistry.Default.GetSerializer<DistributedDetailResponse>())
     .RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
         typeof(CheckReplyProcessor),
         string.Format(PromotionCheckConsts.CheckSubjectTemplate, Const.Milestone.ToLowerInvariant()),
